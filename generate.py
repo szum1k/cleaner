@@ -33,7 +33,7 @@ for k in range(2000,2017):
                 touch('test-file/' + dirPath)
             if r == 4:
                 dirPath = str(j) + '.' + str(i) + '.' + str(k) + '.tar.bz2'
-                make('test-file/' + dirPath)
+                touch('test-file/' + dirPath)
             t = datetime.datetime(k, i, j)
             ts = time.mktime(t.timetuple())
             os.utime('test-file/' + dirPath,(ts,ts))
