@@ -6,6 +6,7 @@ import time
 import datetime
 import sys
 import re
+import argparse
 
 def creation_date(path_to_file):
     """
@@ -21,6 +22,39 @@ def creation_date(path_to_file):
 # pobranie aktualnej daty
 now = datetime.datetime.now()
 
+# wprowadzone parametry i ustawianie wartosci domyslnych gdy ich brak
+praser = argparse.ArgumentParser()
+
+praser.add_argument('-e', '--extension', help='Poddaj rozszerzenie do ktorego chcesz ograniczyc dzialanie CLENER\'a.',default='')
+praser.add_argument('-s', '--separator', help='Podaj po ilu miesiacach backup ma byc bardziej ograniczony.',default=5)
+praser.add_argument('-a', '--after', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji bardziej ograniczonej.', default='5,15,25')
+praser.add_argument('-b', '--before', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji mniej ograniczonej.', default='5,10,15,20,25,30')
+praser.add_argument('-x', '--excluded', help='Podaj pliki/foldery (oddzielajac je przecinkami), ktore maja zostac pominiete.', default='')
+praser.add_argument('-r', '--regexp', help='Wyrazenie regularne, ktorego pozytywne wyniki beda pomijane.', default='/\Zx\A/')
+praser.add_argument('-d', '--dir', help='Ograniczenie pracy CLEANER\'a do jednego podfolderu (bez / (slash) na koncu).', default='test-file')
+
+argResult = praser.parse_args()
+
+# przypisanie wartosci argumentow do zmiennych
+EXT = '[\w\-\.\: ]*' + argResult.extension + '$'
+tmp = 'old,' + argResult.excluded
+EXC = tmp.split(',')
+SEP = int(argResult.separator)
+AFT = map(int, argResult.after.split(','))
+BEF = map(int, argResult.before.split(','))
+RGX = argResult.regexp
+DIR = argResult.dir + '/'
+
+print EXT
+print EXC
+print SEP
+print AFT
+print BEF
+print RGX
+print DIR
+
+sys.exit(1)
+
 # tworzenie struktury folderow na starsze backupy
 if not os.path.exists('test-file/old'):
     os.mkdir('test-file/old')
@@ -33,8 +67,6 @@ for i in range(1992,int(now.strftime("%Y"))):
     else:
         print 'Folder ' + 'test-file/old/' + str(i) + ' istnieje'
 
-# potrzebne zmienne
-# wprowadzone parametry i ustawianie wartosci domyslnych gdy ich brak
 
 if len(sys.argv) < 6:
     while (len(sys.argv) < 6):
