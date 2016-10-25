@@ -95,8 +95,8 @@ for file in dirList:
             #starsze niz rok zostawiany tylko z 5 i przenoszony do folderu old
             if int(d.strftime("%Y")) < int(now.strftime("%Y")):
                 if int(d.strftime("%d")) == OLD:
-                    shutil.move(file, DIR + '/old/' + d.strftime("%Y") + '/')
-                    #os.system('mv test-file/' + file + ' test-file/old/' + d.strftime("%Y") + '/')
+                    #shutil.move(file, DIR + '/old/' + d.strftime("%Y") + '/')
+                    os.system('mv ' + DIR + file + ' ' + DIR + '/old/' + d.strftime("%Y") + '/')
                     print 'Przenosze \'' + file + '\' do ' + DIR + '/old/' + d.strftime("%Y")
                 if int(d.strftime("%d")) != OLD:
                     #shutil.rmtree(DIR + file)
