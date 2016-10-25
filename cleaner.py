@@ -99,9 +99,9 @@ for file in dirList:
                     #os.system('mv test-file/' + file + ' test-file/old/' + d.strftime("%Y") + '/')
                     print 'Przenosze \'' + file + '\' do ' + DIR + '/old/' + d.strftime("%Y")
                 if int(d.strftime("%d")) != OLD:
-                    shutil.rmtree(DIR + file)
+                    #shutil.rmtree(DIR + file)
                     print 'Usuwam \'' + file + '\''
-                    #os.system('rm -rf test-file/' + file)
+                    os.system('rm -rf ' + DIR + file)
 
             #do roku czasu
             if int(d.strftime("%Y")) == int(now.strftime("%Y")):
@@ -112,8 +112,8 @@ for file in dirList:
                         print 'Backup starszy niz 5 miesiecy - ' + DIR + file + ' - zostawiam'
                     else:
                         print 'Backup starszy niz 5 miesiecy - ' + DIR + file + ' - usuwam'
-                        shutil.rmtree(DIR + file)
-                        #os.system('rm -rf test-file/' + file)
+                        #shutil.rmtree(DIR + file)
+                        os.system('rm -rf ' + DIR + file)
                 else:
 
                     #starsze niz 1 miech (5, 10, 15, 20, 25, 30)
@@ -122,8 +122,8 @@ for file in dirList:
                             print 'Backup starszy niz 1 miesiac: ' + DIR + file + ' - zostawiam'
                         else:
                             print 'Backup starszy niz 1 miesiac: ' + DIR + file + ' - usuwam'
-                            shutil.rmtree(DIR + file)
-                            #os.system('rm -rf test-file/' + file)
+                            #shutil.rmtree(DIR + file)
+                            os.system('rm -rf ' + DIR + file)
                     if int(d.strftime("%m")) == int(now.strftime("%m")):
                         print 'Backup z tego miesiaca: ' + DIR + file + ' - zostawiam'
                 #usuniecie bledow generowanie pliki po dacie
