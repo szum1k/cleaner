@@ -75,7 +75,7 @@ for i in range(1992,int(now.strftime("%Y"))):
         print 'Folder ' + DIR + 'old/' + str(i) + ' istnieje'
 
 # uzyskanie listy plikow\folderow w folderze
-dirList = os.listdir('test-file')
+dirList = os.listdir(DIR)
 
 # dzialania dla kazdego pliku\folderu w liscie plikow
 for file in dirList:
@@ -96,8 +96,8 @@ for file in dirList:
             if int(d.strftime("%Y")) < int(now.strftime("%Y")):
                 if int(d.strftime("%d")) == OLD:
                     #shutil.move(file, DIR + '/old/' + d.strftime("%Y") + '/')
-                    os.system('mv ' + DIR + file + ' ' + DIR + '/old/' + d.strftime("%Y") + '/')
-                    print 'Przenosze \'' + file + '\' do ' + DIR + '/old/' + d.strftime("%Y")
+                    os.system('mv ' + DIR + file + ' ' + DIR + 'old/' + d.strftime("%Y") + '/')
+                    print 'Przenosze \'' + file + '\' do ' + DIR + 'old/' + d.strftime("%Y")
                 if int(d.strftime("%d")) != OLD:
                     #shutil.rmtree(DIR + file)
                     print 'Usuwam \'' + file + '\''
