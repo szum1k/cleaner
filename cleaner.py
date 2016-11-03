@@ -20,22 +20,35 @@ def creation_date(path_to_file):
         stat = os.stat(path_to_file)
         return stat.st_mtime
 
+def tarFile(path_to_file, creationDate, now):
+    """
+    spakowanie  folderow do tar.gz i zmiana ich daty modyfikacji spowrotem na wlasciwa
+    """
+    os.system('tar -zcvf ' + path_to_file + '.tar.gz ' + path_to_file)
+    t = datetime.datetime(int(creationDate.strftime("%Y")), int(creationDate.strftime("%m")), int(creationDate.strftime("%d")))
+    ts = time.mktime(t.timetuple())
+    os.utime(path_to_file + '.tar.gz', (ts, ts))
+    print 'Pakowanie ' + path_to_file + ' zakonczone.'
+
 # pobranie aktualnej daty
 now = datetime.datetime.now()
 
 # wprowadzone parametry i ustawianie wartosci domyslnych gdy ich brak
-praser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Skrypt czyszczacy backupy.')
 
-praser.add_argument('-e', '--extension', help='Poddaj rozszerzenie do ktorego chcesz ograniczyc dzialanie CLENER\'a.',default='')
-praser.add_argument('-s', '--separator', help='Podaj po ilu miesiacach backup ma byc bardziej ograniczony.',default=5)
-praser.add_argument('-o', '--old', help='Podaj dzien miesiaca, ktory bedzie przechowywany po roku czasu', default=5)
-praser.add_argument('-a', '--after', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji bardziej ograniczonej.', default='5,15,25')
-praser.add_argument('-b', '--before', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji mniej ograniczonej.', default='5,10,15,20,25,30')
-praser.add_argument('-x', '--excluded', help='Podaj pliki/foldery (oddzielajac je przecinkami), ktore maja zostac pominiete.', default='')
-praser.add_argument('-r', '--regexp', help='Wyrazenie regularne, ktorego pozytywne wyniki beda pomijane.', default='\Zx\A')
-praser.add_argument('-d', '--dir', help='Ograniczenie pracy CLEANER\'a do jednego podfolderu (bez / (slash) na koncu).', default='test-file')
+requiredArg = parser.add_argument_group('required arguments')
+requiredArg.add_argument('-d', '--dir', help='Absolutna sciezka dostepu do folderu z backupem (bez / (slash) na koncu).', default='/vol', required=True)
 
-argResult = praser.parse_args()
+parser.add_argument('-e', '--extension', help='Poddaj rozszerzenie do ktorego chcesz ograniczyc dzialanie CLENER\'a.', default='')
+parser.add_argument('-s', '--separator', help='Podaj po ilu miesiacach backup ma byc bardziej ograniczony.', default=5)
+parser.add_argument('-o', '--old', help='Podaj dzien miesiaca, ktory bedzie przechowywany po roku czasu', default=5)
+parser.add_argument('-a', '--after', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji bardziej ograniczonej.', default='5,15,25')
+parser.add_argument('-b', '--before', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji mniej ograniczonej.', default='5,10,15,20,25,30')
+parser.add_argument('-x', '--excluded', help='Podaj pliki/foldery (oddzielajac je przecinkami), ktore maja zostac pominiete.', default='')
+parser.add_argument('-r', '--regexp', help='Wyrazenie regularne, ktorego pozytywne wyniki beda pomijane.', default='\Zx\A')
+#parser.add_argument('-t', '--tar', help='Pakowanie folderow do tar.gz', default=True)
+
+argResult = parser.parse_args()
 
 # przypisanie wartosci argumentow do zmiennych
 EXT = '[\w\-\.\:\ \,]*' + argResult.extension + '$'
@@ -50,6 +63,7 @@ BEF = map(int, argResult.before.split(','))
 RGX = argResult.regexp
 DIR = argResult.dir + '/'
 OLD = argResult.old
+#TAR = argResult.tar
 
 print EXT
 print EXC
@@ -59,12 +73,13 @@ print BEF
 print RGX
 print DIR
 print OLD
+#print TAR
 
 #sys.exit(1)
 
 # tworzenie struktury folderow na starsze backupy
-if not os.path.exists('test-file/old'):
-    os.mkdir('test-file/old')
+if not os.path.exists(DIR + 'old'):
+    os.mkdir(DIR + 'old')
 
 # foldery roczne
 for i in range(1992,int(now.strftime("%Y"))):
@@ -89,6 +104,8 @@ for file in dirList:
         if re.search(EXT, file):
 
             dirPath = DIR + file
+
+            # sys.exit(0)
             # przeforamtowanie daty na bardziej ludzki
             d = datetime.datetime.strptime(time.ctime(creation_date(dirPath)), "%a %b %d %H:%M:%S %Y")
 
@@ -96,11 +113,15 @@ for file in dirList:
             if int(d.strftime("%Y")) < int(now.strftime("%Y")):
                 if int(d.strftime("%d")) == OLD:
                     #shutil.move(file, DIR + '/old/' + d.strftime("%Y") + '/')
-                    os.system('mv ' + DIR + file + ' ' + DIR + 'old/' + d.strftime("%Y") + '/')
+                    moveTo = DIR + 'old/' + d.strftime("%Y") + '/'
+                    os.system('mv ' + DIR + file + ' ' + moveTo)
                     print 'Przenosze \'' + file + '\' do ' + DIR + 'old/' + d.strftime("%Y")
+                    #if TAR and (os.path.isdir(moveTo + file)):
+                    #    tarFile(moveTo + file,d,now)
+                    #    os.system('rm -rf ' + moveTo + file)
                 if int(d.strftime("%d")) != OLD:
                     #shutil.rmtree(DIR + file)
-                    print 'Usuwam \'' + file + '\''
+                    print 'Backup starszy niz rok usuwam \'' + file + '\''
                     os.system('rm -rf ' + DIR + file)
 
             #do roku czasu
@@ -110,6 +131,9 @@ for file in dirList:
                 if int(d.strftime("%m")) < (int(now.strftime("%m")) - SEP + 1):
                     if int(d.strftime("%d")) in AFT:
                         print 'Backup starszy niz 5 miesiecy - ' + DIR + file + ' - zostawiam'
+                        #if TAR and (os.path.isdir(DIR + file)):
+                        #    tarFile(DIR + file, d, now)
+                        #    os.system('rm -rf ' + DIR + file)
                     else:
                         print 'Backup starszy niz 5 miesiecy - ' + DIR + file + ' - usuwam'
                         #shutil.rmtree(DIR + file)
@@ -120,15 +144,18 @@ for file in dirList:
                     if int(d.strftime("%m")) < int(now.strftime("%m")):
                         if int(d.strftime("%d")) in BEF:
                             print 'Backup starszy niz 1 miesiac: ' + DIR + file + ' - zostawiam'
+                        #    if TAR and (os.path.isdir(DIR + file)):
+                        #        tarFile(DIR + file, d, now)
+                        #        os.system('rm -rf ' + DIR + file)
                         else:
                             print 'Backup starszy niz 1 miesiac: ' + DIR + file + ' - usuwam'
                             #shutil.rmtree(DIR + file)
                             os.system('rm -rf ' + DIR + file)
                     if int(d.strftime("%m")) == int(now.strftime("%m")):
                         print 'Backup z tego miesiaca: ' + DIR + file + ' - zostawiam'
-                #usuniecie bledow generowanie pliki po dacie
-                if int((d.strftime("%m")) > int(now.strftime("%m"))) and ((d.strftime("%Y")) == int(now.strftime("%Y"))):
-                    os.system('rm -rf test-file/' + file)
+                    #if TAR and (os.path.isdir(DIR + file)):
+                    #    tarFile(DIR + file,d,now)
+                    #    os.system('rm -rf ' + DIR + file)
 
         else:
             print 'Plik\Folder nie pasuje do kryteriow - ' + file

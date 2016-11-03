@@ -22,6 +22,7 @@ for k in range(2000,2017):
     for i in range(1, 13):
         for j in range(1, 29):
             r = random.randint(1,4)
+            #r = 2
             if r == 1:
                 dirPath = str(j) + '.' + str(i) + '.' + str(k) + '.txt'
                 touch('test-file/' + dirPath)
