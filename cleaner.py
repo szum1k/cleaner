@@ -37,16 +37,16 @@ now = datetime.datetime.now()
 parser = argparse.ArgumentParser(description='Skrypt czyszczacy backupy.')
 
 requiredArg = parser.add_argument_group('required arguments')
-requiredArg.add_argument('-d', '--dir', help='Absolutna sciezka dostepu do folderu z backupem (bez / (slash) na koncu).', default='/vol', required=True)
+#requiredArg.add_argument('-d', '--dir', help='Absolutna sciezka dostepu do folderu z backupem (bez / (slash) na koncu).', default='/vol', required=True)
 
 parser.add_argument('-e', '--extension', help='Poddaj rozszerzenie do ktorego chcesz ograniczyc dzialanie CLENER\'a.', default='')
 parser.add_argument('-s', '--separator', help='Podaj po ilu miesiacach backup ma byc bardziej ograniczony.', default=5)
 parser.add_argument('-o', '--old', help='Podaj dzien miesiaca, ktory bedzie przechowywany po roku czasu', default=5)
 parser.add_argument('-a', '--after', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji bardziej ograniczonej.', default='5,15,25')
 parser.add_argument('-b', '--before', help='Podaj dni miesiaca (rodzielajac je przecinkami), z ktorych backup ma zostac w wersji mniej ograniczonej.', default='5,10,15,20,25,30')
-parser.add_argument('-x', '--excluded', help='Podaj pliki/foldery (oddzielajac je przecinkami), ktore maja zostac pominiete.', default='')
+parser.add_argument('-x', '--excluded', help='Podaj plik z rzeczami do pominiecia (po przecinkach).', default='excluded.txt')
 parser.add_argument('-r', '--regexp', help='Wyrazenie regularne, ktorego pozytywne wyniki beda pomijane.', default='\Zx\A')
-#parser.add_argument('-t', '--tar', help='Pakowanie folderow do tar.gz', default=True)
+parser.add_argument('-t', '--tar', help='Pakowanie folderow do tar.gz', default=True)
 
 argResult = parser.parse_args()
 
@@ -55,15 +55,17 @@ EXT = '[\w\-\.\:\ \,]*' + argResult.extension + '$'
 if argResult.excluded == '':
     EXC = ['old']
 else:
-    tmp = 'old,' + argResult.excluded
-    EXC = tmp.split(',')
+    f = open(argResult.excluded)
+    EXC = f.read().split('\n')
+    EXC.append('old')
 SEP = int(argResult.separator)
 AFT = map(int, argResult.after.split(','))
 BEF = map(int, argResult.before.split(','))
 RGX = argResult.regexp
-DIR = argResult.dir + '/'
+#DIR = argResult.dir + '/'
+DIR = 'test-file2/'
 OLD = argResult.old
-#TAR = argResult.tar
+TAR = argResult.tar
 
 print EXT
 print EXC
@@ -73,7 +75,7 @@ print BEF
 print RGX
 print DIR
 print OLD
-#print TAR
+print TAR
 
 #sys.exit(1)
 
@@ -153,9 +155,11 @@ for file in dirList:
                             os.system('rm -rf ' + DIR + file)
                     if int(d.strftime("%m")) == int(now.strftime("%m")):
                         print 'Backup z tego miesiaca: ' + DIR + file + ' - zostawiam'
-                    #if TAR and (os.path.isdir(DIR + file)):
-                    #    tarFile(DIR + file,d,now)
-                    #    os.system('rm -rf ' + DIR + file)
+
+                #tarowanie folderow
+                if TAR and (os.path.isdir(DIR + file)):
+                    tarFile(DIR + file,d,now)
+                    os.system('rm -rf ' + DIR + file)
 
         else:
             print 'Plik\Folder nie pasuje do kryteriow - ' + file

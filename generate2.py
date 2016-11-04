@@ -19,7 +19,7 @@ else:
     make('test-file2')
 
 for k in range(2016,2017):
-    for i in range(10, 11):
+    for i in range(7, 11):
         for j in range(1, 25):
             #r = random.randint(1,4)
             #if r == 1:
